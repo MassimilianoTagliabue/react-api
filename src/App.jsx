@@ -1,49 +1,43 @@
 import { useEffect, useState } from 'react'
+import axios from "axios"
+import AppCard from './components/AppCard';
+const apiUrl = import.meta.env.VITE_API_URL;
 
 const initialPost = {
-
+  id: Date.now,
   titolo: "",
   contenuto: "",
   immagine: "",
-  
 }
 
 
 function App() {
-
   const [post, setPost] = useState([])//array di post
-
   const [formPost, setFormPost] = useState(initialPost) //post singolo
- 
 
 
+  useEffect(() => {
+    
+    getPost();
+
+    
+  }, []);
 
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const getPost = () => {
+
+    axios.get(`${apiUrl}/posts`).then((resp) => {
+      
+
+      setPost(resp.data.data)
+      
+
+    });
+  };
 
 
-
-    //creo l'oggetto del nuovo post
-    const newPost = {
-      ...formPost,
-      id: Date.now(),
-    };
-
-    const newArray = [...post, newPost]
-
-    //aggiorno il post, aggiungendo il nuovo post
-    setPost(newArray);
-
-    //ripulisco i campi
-    setFormPost(initialPost);
-
-
-  }
-
-
+  //funzione che parte ogni volta che inseriamo
   const handleInputChange = (event) => {
-    event.preventDefault();
 
     const keytochange = event.target.name;        //prende il nome dell'input   
     let newValue = event.target.value   //prende il contenuto dell'input
@@ -51,19 +45,54 @@ function App() {
     const newPost = {
       ...formPost,
       [keytochange]: newValue      //assegno un nuovo valore all'input vuoto 
-    }
+    };
 
     //aggiorno il post
-    setFormPost(newPost)
+    setFormPost(newPost);
+  }
+
+
+
+  //funzione che parte quando viene premuto il tasto submit
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    axios.post(`${apiUrl}/posts`, formPost).then((resp) => {
+
+      console.log(resp);
+      const newPost = resp.data;
+
+      //creo l'oggetto del nuovo post
+      const newBlog= [
+        ...post,
+        newPost,
+        
+      ];
+
+      //aggiorno il post, aggiungendo il nuovo post
+      setPost(newBlog);
+
+      //ripulisco i campi
+      setFormPost(initialPost);
+    })
+
+
+
 
   }
 
   // funzione che elimina gli elementi
-  const elimina = (cancellaTitolo) => {
-    const cancellato = post.filter((curtitle) => curtitle.id !== cancellaTitolo)
-    console.log(cancellato);
-    setPost(cancellato);
-  }
+  const handleDelete = (id) => {
+
+    console.log("delete", id);
+    axios.delete(`${apiUrl}/posts/${id}`).then((resp) => {
+      console.log(resp);
+      const newBlog = post.filter((curPost) => curPost.id != id)
+      setPost(newBlog);
+    })
+
+  };
+
 
 
 
@@ -81,7 +110,7 @@ function App() {
             <input
               value={formPost.titolo}
               onChange={handleInputChange}
-              name="title"
+              name="titolo"
               type="text"
               className="form-control"
               id='titolo' />
@@ -89,14 +118,14 @@ function App() {
 
           {/* creo input per la descrizione */}
           <div className="input-group mt-3 ">
-            <span className="input-group-text" htmlFor="descrizione">descrizione</span>
+            <span className="input-group-text" htmlFor="contenuto">descrizione</span>
             <input
               value={formPost.contenuto}
               onChange={handleInputChange}
-              name="description"
+              name="contenuto"
               type="text"
               className="form-control"
-              id='descrizione' />
+              id='contenuto' />
           </div>
 
           {/* creo input per l'immagine' */}
@@ -105,19 +134,12 @@ function App() {
             <input
               value={formPost.immagine}
               onChange={handleInputChange}
-              name="image"
+              name="immagine"
               type="text"
               className="form-control"
               id='immagine' />
           </div>
 
-          {/* creo select per la categoria ' */}
-          <select class="form-select mt-3" aria-label="Default select example">
-            <option selected>Open this select menu</option>
-            <option value="1">One</option>
-            <option value="2">Two</option>
-            <option value="3">Three</option>
-          </select>
 
 
           <button type='submit' className='btn btn-primary mt-5'>invia</button>
@@ -129,24 +151,24 @@ function App() {
         <section>
           <h2>lista</h2>
           {/* creo la lista con gli elementi inseriti */}
-          <div className='d-flex row-gap-4 column-gap-3 flex-wrap'>
-            {post.map((curpost, index) => {
-              return (<div key={index} className='ms-col '>
-                <div className="card ms-width" >
-                  <img src={curpost.immagine} className="card-img-top" alt="..." />
-                  <div className="card-body">
-                    <h5 className="card-title">{curpost.titolo}</h5>
-                    <p className="card-text">{curpost.contenuto}</p>
-                  </div>
-                  
-                  <div className="card-body">
-                    <button className='btn btn-danger' onClick={() => elimina(curpost.id)}> Elimina 🗑️</button>
-                  </div>
-                </div>
-              </div>)
-            })}
 
-          </div>
+          {post.lenght > 0 ? (
+            <div className='d-flex row-gap-4 column-gap-3 flex-wrap'>
+              {post.map((curpost) =>
+
+                <div key={curpost.id} className='ms-col '>
+                  <AppCard
+                  post={curpost}
+                  onCancel={() => handleDelete(curpizza.id)}
+                  />
+                </div>
+
+              )}
+            </div>
+          ) : (
+            <p>nessun post presente</p>
+          )
+          }
         </section>
 
 
