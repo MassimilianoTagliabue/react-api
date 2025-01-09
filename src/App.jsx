@@ -30,6 +30,8 @@ function App() {
       
 
       setPost(resp.data.data)
+      console.log(resp.data.data);
+      
       
 
     });
@@ -152,14 +154,14 @@ function App() {
           <h2>lista</h2>
           {/* creo la lista con gli elementi inseriti */}
 
-          {post.lenght > 0 ? (
+          {post.length > 0 ? (
             <div className='d-flex row-gap-4 column-gap-3 flex-wrap'>
               {post.map((curpost) =>
 
                 <div key={curpost.id} className='ms-col '>
                   <AppCard
                   post={curpost}
-                  onCancel={() => handleDelete(curpizza.id)}
+                  onCancel={() => handleDelete(curpost.id)}
                   />
                 </div>
 
